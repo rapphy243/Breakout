@@ -11,6 +11,8 @@ import GameplayKit
 class GameScene: SKScene {
     
     private var ball = SKShapeNode()
+    private var paddle = SKSpriteNode()
+    private var brick = SKSpriteNode()
     
     override func didMove(to view: SKView) {
         // this stuff happens once (when the app opens)
@@ -21,6 +23,7 @@ class GameScene: SKScene {
     func resetGame() {
         // this stuff happens before each game starts
         makeBall()
+        makePaddle()
     }
     
     func createBackground() {
@@ -64,4 +67,15 @@ class GameScene: SKScene {
         
         addChild(ball)
     }
+    
+    func makePaddle() {
+        paddle.removeFromParent()
+        paddle = SKSpriteNode(color: .white, size: CGSize(width: frame.width / 4, height: 20))
+        paddle.name = "paddle"
+        paddle.physicsBody = SKPhysicsBody(rectangleOf: paddle.size)
+        paddle.physicsBody?.isDynamic = false
+        addChild(paddle)
+    }
+    
+    
 }
