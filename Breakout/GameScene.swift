@@ -12,7 +12,7 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
     
     private var ball = SKShapeNode()
     private var paddle = SKSpriteNode()
-    private var bricks = [SKSpriteNode]()
+    private var bricks = [SKSpriteNode()]
     private var loseZone = SKSpriteNode()
     private var removedBricks = 0
     
@@ -28,22 +28,23 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
         physicsWorld.contactDelegate = self
         self.physicsBody = SKPhysicsBody(edgeLoopFrom: frame)
         createBackground()
-        resetGame()
         makeLoseZone()
         makeLabels()
+        resetGame()
     }
     
     func resetGame() {
         // this stuff happens before each game starts
-        updateLabels()
         makeBall()
         makePaddle()
         makeBricks()
+        updateLabels()
     }
     
     func kickBall() {
         ball.physicsBody?.isDynamic = true
-        ball.physicsBody?.applyImpulse(CGVector(dx: Int.random(in: -5...5), dy: 5))
+        ball.physicsBody?
+            .applyImpulse(CGVector(dx: Int.random(in: -5...5), dy: 5))
         
     }
     
@@ -74,7 +75,10 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
     }
     
     func makeBrick(x: Int, y: Int, color: UIColor) {
-        let brick = SKSpriteNode(color: color, size: CGSize(width: 50, height: 20))
+        let brick = SKSpriteNode(
+            color: color,
+            size: CGSize(width: 50, height: 20)
+        )
         brick.position = CGPoint(x: x, y: y)
         brick.physicsBody = SKPhysicsBody(rectangleOf: brick.size)
         brick.physicsBody?.isDynamic = false
@@ -94,11 +98,16 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
         
         // now, figure the number and spacing of each row of bricks
         let count = Int(frame.width) / 55
-        let xOffset = (Int(frame.width) - (count * 55)) / 2 + Int(frame.minX) + 25
-        let y = Int(frame.maxY) - 65
-        for i in 0..<count {
-            let x = i * 55 + xOffset
-            makeBrick(x: x, y: y, color: .green)
+        let xOffset = (Int(frame.width) - (count * 55)) / 2 + Int(
+            frame.minX
+        ) + 25
+        let colors: [UIColor] = [.blue, .orange, .green]
+        for r in 0..<3 {
+            let y = Int(frame.maxY) - 65 - (r * 25)
+            for i in 0..<count {
+                let x = i * 55 + xOffset
+                makeBrick(x: x, y: y, color: colors[r])
+            }
         }
         
         
@@ -107,7 +116,7 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
     func makeBall() {
         ball.removeFromParent() //Remove the ball (if it exists)
         ball = SKShapeNode(circleOfRadius: 10)
-        ball.position = CGPoint(x: frame.midX, y: frame.midY)
+        ball.position = CGPoint(x: frame.midX, y: frame.midY + 10)
         ball.strokeColor = .black
         ball.fillColor = .yellow
         ball.name = "ball"
@@ -174,7 +183,7 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
         scoreLabel.fontSize = 18
         scoreLabel.fontColor = .black
         scoreLabel.fontName = "Ariel"
-        scoreLabel.position = CGPoint(x: frame.minX - 50, y: frame.minY + 18)
+        scoreLabel.position = CGPoint(x: frame.maxX - 50, y: frame.minY + 18)
         addChild(scoreLabel)
         
     }
@@ -229,25 +238,35 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
     override func update(_ currentTime: TimeInterval) {
         if abs(ball.physicsBody!.velocity.dx) < 100 {
             // ball stalled in the y direction, so kick it randomly horizontally
-            ball.physicsBody?.applyImpulse(CGVector(dx: Int.random(in: -3...3), dy: 0))
+            ball.physicsBody?
+                .applyImpulse(CGVector(dx: Int.random(in: -3...3), dy: 0))
         }
         if abs(ball.physicsBody!.velocity.dy) < 100 {
             // ball stalled in the y direction, so kick it randomly vertially
-            ball.physicsBody?.applyImpulse(CGVector(dx: 0, dy: Int.random(in: -3...3)))
+            ball.physicsBody?
+                .applyImpulse(CGVector(dx: 0, dy: Int.random(in: -3...3)))
         }
     }
     
     func didBegin(_ contact: SKPhysicsContact) {
-        ball.physicsBody!.velocity.dx *= CGFloat(1.02)
-        ball.physicsBody!.velocity.dy *= CGFloat(1.02)
         for brick in bricks {
             if contact.bodyA.node == brick || contact.bodyB.node == brick {
                 score += 1
+                ball.physicsBody!.velocity.dx *= CGFloat(1.02)
+                ball.physicsBody!.velocity.dy *= CGFloat(1.02)
                 updateLabels()
-                brick.removeFromParent()
-                removedBricks += 1
-                if removedBricks == bricks.count {
-                    gameOver(winner: true)
+                if brick.color == .blue {
+                    brick.color = .orange // blue bricks turn orange
+                }
+                else if brick.color == .orange {
+                    brick.color = .green // orange bricks turn green
+                }
+                else { // must be a green brick, which get removed
+                    brick.removeFromParent()
+                    removedBricks += 1
+                    if removedBricks == bricks.count {
+                        gameOver(winner: true)
+                    }
                 }
             }
         }
