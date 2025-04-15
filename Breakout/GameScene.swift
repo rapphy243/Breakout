@@ -149,6 +149,7 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
             size: CGSize(width: frame.width / 4, height: 20)
         )
         paddle.name = "paddle"
+        paddle.position = CGPoint(x: frame.midX, y: frame.minY + 100)
         paddle.physicsBody = SKPhysicsBody(rectangleOf: paddle.size)
         paddle.physicsBody?.isDynamic = false
         addChild(paddle)
